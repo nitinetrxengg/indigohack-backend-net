@@ -35,20 +35,3 @@ components:
   - name: nuget
     volume:
       size: 1G
-commands:
-  - exec:
-      commandLine: dotnet build -c $CONFIGURATION $STARTUP_PROJECT /p:UseSharedCompilation=false
-      component: tools
-      group:
-        kind: build
-      label: Build
-      workingDir: ${PROJECTS_ROOT}/dotnet-web-simple
-    id: build
-  - exec:
-      commandLine: dotnet run -c $CONFIGURATION --no-build --project $STARTUP_PROJECT --no-launch-profile
-      component: tools
-      group:
-        kind: run
-      label: Run
-      workingDir: ${PROJECTS_ROOT}/dotnet-web-simple
-    id: run
