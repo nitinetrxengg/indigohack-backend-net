@@ -3,12 +3,18 @@ metadata:
   attributes:
     metadata-name-field: generateName
 components:
-  - name: tools
+  - attributes:
+      controller.devfile.io/merge-contribution: true
     container:
-      image: quay.io/balki404/dotnet-udi9:6.0
-      memoryLimit: 2Gi
-      mountSources: true
-      sourceMapping: /projects
+      args:
+        - tail
+        - '-f'
+        - /dev/null
+      endpoints:
+        - exposure: public
+          name: app-url
+          protocol: https
+          targetPort: 8080
       env:
         - name: CONFIGURATION
           value: Debug
@@ -18,14 +24,31 @@ components:
           value: Development
         - name: ASPNETCORE_URLS
           value: http://*:8080
-      endpoints:
-        - exposure: public
-          name: app-url
-          protocol: https
-          targetPort: 8080
+      image: quay.io/balki404/dotnet-udi9:6.0
+      memoryLimit: 2Gi
+      mountSources: true
+      sourceMapping: /projects
       volumeMounts:
         - name: nuget
           path: /home/user/.nuget
+    name: tools
   - name: nuget
     volume:
       size: 1G
+commands:
+  - exec:
+      commandLine: dotnet build -c $CONFIGURATION $STARTUP_PROJECT /p:UseSharedCompilation=false
+      component: tools
+      group:
+        kind: build
+      label: Build
+      workingDir: ${PROJECTS_ROOT}/dotnet-web-simple
+    id: build
+  - exec:
+      commandLine: dotnet run -c $CONFIGURATION --no-build --project $STARTUP_PROJECT --no-launch-profile
+      component: tools
+      group:
+        kind: run
+      label: Run
+      workingDir: ${PROJECTS_ROOT}/dotnet-web-simple
+    id: run
